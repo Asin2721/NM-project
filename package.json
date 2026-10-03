@@ -1,0 +1,26 @@
+{
+  "name": "comiccraft-backend",
+  "version": "1.0.0",
+  "description": "Node.js Express Backend API for ComicCraft AI Comic Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "archiver": "^7.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "keywords": [
+    "comiccraft",
+    "gemini-ai",
+    "express",
+    "nodejs",
+    "ai-comic-generator"
+  ],
+  "author": "ComicCraft Studio",
+  "license": "MIT"
+}

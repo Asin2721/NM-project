@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComicCraft - AI Comic Story Creator</title>
+    <meta name="description" content="Turn your imagination into vivid multi-panel comics with Gemini AI & Stable Diffusion AI image generation. Export print-ready PDFs and complete comic books.">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- jsPDF for Client-side PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- JSZip & FileSaver for downloading source code ZIP directly from browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="home-body">
+    <div class="comic-overlay"></div>
+
+    <!-- Top Main Header -->
+    <header class="main-header">
+        <div class="logo-container">
+            <span class="comic-badge">⚡ AI COMIC CREATOR ⚡</span>
+            <h1 class="logo-title">COMICCRAFT</h1>
+            <p class="tagline">Turn Your Imagination into Vivid Multi-Panel Comics with Gemini AI & AI Image Generators</p>
+            <div class="header-actions">
+                <button type="button" class="btn-download-source" onclick="downloadSourceZip()">
+                    📦 Download Source Code (.ZIP)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- VIEW 1: COMIC CREATION FORM -->
+    <main class="container" id="view-form">
+        <div class="form-wrapper comic-card">
+            <div class="card-ribbon">NEW ISSUE</div>
+            <h2 class="card-heading">Craft Your Comic Strip</h2>
+            <p class="card-subtext">Fill in the story parameters below to let Gemini generate the 5-panel story outline, dialogue, and comic illustrations.</p>
+
+            <form id="comicForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label for="story_prompt">
+                        <span class="label-icon">✍️</span> Story Prompt
+                        <span class="required">*</span>
+                    </label>
+                    <textarea 
+                        id="story_prompt" 
+                        rows="3" 
+                        required
+                        placeholder="e.g., A brave fox exploring an enchanted forest finds a glowing crystal..."
+                    >A brave fox exploring an enchanted forest</textarea>
+                    <small class="hint">The AI creates a structured 5-panel story arc: Intro, Discovery, Rising Conflict, Climax, and Resolution.</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-half">
+                        <label for="character_name">
+                            <span class="label-icon">🦊</span> Main Character Name
+                        </label>
+                        <input type="text" id="character_name" value="Rusty the Fox" required>
+                    </div>
+
+                    <div class="form-group col-half">
+                        <label for="setting">
+                            <span class="label-icon">🌲</span> Setting
+                        </label>
+                        <select id="setting">
+                            <option value="Enchanted Forest" selected>Enchanted Forest</option>
+                            <option value="Cyberpunk City">Cyberpunk City</option>
+                            <option value="Space Station">Deep Space Station</option>
+                            <option value="High School">High School</option>
+                            <option value="Underwater Kingdom">Underwater Kingdom</option>
+                            <option value="Desert Ruins">Ancient Desert Ruins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-half">
+                        <label for="tone">
+                            <span class="label-icon">🎭</span> Story Tone
+                        </label>
+                        <select id="tone">
+                            <option value="Dramatic" selected>Dramatic</option>
+                            <option value="Funny">Funny / Humorous</option>
+                            <option value="Light-Hearted">Light-Hearted & Whimsical</option>
+                            <option value="Heroic">Heroic & Action-Packed</option>
+                            <option value="Poetic">Poetic & Mysterious</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-half">
+                        <label for="art_style">
+                            <span class="label-icon">🎨</span> Art Style
+                        </label>
+                        <select id="art_style">
+                            <option value="Comic Book" selected>Classic Comic Book</option>
+                            <option value="Anime">Anime / Manga</option>
+                            <option value="Pixel Art">Retro Pixel Art</option>
+                            <option value="Realistic">Cinematic Realistic</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Optional Gemini Key Accordion -->
+                <details class="api-key-toggle">
+                    <summary>🔑 Optional: Use your own Google Gemini API Key</summary>
+                    <div class="key-input-container">
+                        <input type="password" id="gemini_api_key" placeholder="Enter Gemini API Key (Optional)">
+                        <small>If left blank, ComicCraft automatically uses the built-in smart generative story engine with free AI image generation!</small>
+                    </div>
+                </details>
+
+                <div class="preset-chips">
+                    <span class="preset-label">Quick Ideas:</span>
+                    <button type="button" class="chip" onclick="fillPreset('A tech-savvy raccoon builds a rocket from scrapyard parts', 'Gizmo', 'Cyberpunk City', 'Funny', 'Comic Book')">🚀 Scrapyard Rocket</button>
+                    <button type="button" class="chip" onclick="fillPreset('A lone cyborg samurai defends a neon cherry blossom temple', 'Ren', 'Cyberpunk City', 'Dramatic', 'Anime')">⚔️ Cyborg Samurai</button>
+                    <button type="button" class="chip" onclick="fillPreset('An astronaut discovers a friendly creature on Europa', 'Captain Stella', 'Space Station', 'Light-Hearted', 'Realistic')">🌌 Europa Alien</button>
+                </div>
+
+                <div class="form-action">
+                    <button type="submit" class="btn-create" id="generateBtn">
+                        <span class="btn-text">💥 GENERATE COMIC STRIP</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- VIEW 2: LOADING PROGRESS OVERLAY -->
+    <div id="loadingModal" class="loading-modal">
+        <div class="loading-content comic-card">
+            <div class="spinner"></div>
+            <h3 class="loading-title">CRAFTING YOUR COMIC...</h3>
+            <div class="loading-steps">
+                <div class="step-item" id="step1">⏳ Gemini Flash: Generating 5-Panel Outline...</div>
+                <div class="step-item" id="step2">⏳ Gemini Pro: Writing Dialogues & Narration...</div>
+                <div class="step-item" id="step3">⏳ AI Illustrator: Rendering Panel Images...</div>
+                <div class="step-item" id="step4">⏳ Layout Builder: Compiling Comic Strip...</div>
+            </div>
+            <p class="loading-note" id="loadingStatusText">Bringing your comic story to life...</p>
+        </div>
+    </div>
+
+    <!-- VIEW 3: COMIC PREVIEW -->
+    <section id="view-preview" style="display: none;">
+        <header class="preview-header">
+            <div class="header-left">
+                <button type="button" class="btn-back" onclick="switchView('view-form')">⬅ Back to Studio</button>
+                <span class="comic-badge">5-PANEL ISSUE</span>
+            </div>
+            <div class="header-center">
+                <h1 class="preview-story-title" id="previewHeaderTitle">THE ADVENTURE</h1>
+            </div>
+            <div class="header-right">
+                <button type="button" class="btn-download" onclick="generateAndDownloadPDF()">
+                    <span class="icon">📥</span> Download Comic as PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="meta-strip">
+            <div class="meta-item"><strong>Hero:</strong> <span id="metaHero"></span></div>
+            <div class="meta-item"><strong>Setting:</strong> <span id="metaSetting"></span></div>
+            <div class="meta-item"><strong>Tone:</strong> <span id="metaTone"></span></div>
+            <div class="meta-item"><strong>Style:</strong> <span id="metaStyle"></span></div>
+        </div>
+
+        <div class="comic-grid-container">
+            <div class="panels-column" id="panelsContainer">
+                <!-- Dynamically injected panels -->
+            </div>
+
+            <div class="bottom-action-banner">
+                <div class="banner-content">
+                    <div>
+                        <h3 class="banner-title">Love Your Comic?</h3>
+                        <p class="banner-sub">Save the entire formatted storyline with illustrations and dialogues in a print-ready PDF!</p>
+                    </div>
+                    <div class="banner-buttons">
+                        <button type="button" class="btn-secondary" onclick="switchView('view-form')">Create Another Comic</button>
+                        <button type="button" class="btn-download-big" onclick="generateAndDownloadPDF()">
+                            🚀 Download Comic as PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIEW 4: EXPORT SUCCESS -->
+    <section id="view-success" class="success-container" style="display: none;">
+        <div class="success-card comic-card">
+            <div class="success-badge">🎉 EXPORT COMPLETE!</div>
+            <h1 class="success-title">Your Comic is Downloaded!</h1>
+            <p class="success-subtitle">
+                The full multi-panel comic book with illustrations, ambient captions, and dialogues has been assembled and downloaded to your device as a PDF.
+            </p>
+            <div class="action-buttons-group">
+                <button type="button" class="btn-download-again" onclick="generateAndDownloadPDF()">
+                    📥 Download PDF Again
+                </button>
+                <button type="button" class="btn-create-another" onclick="switchView('view-form')">
+                    🎨 Go Create Another Comic
+                </button>
+            </div>
+            <div class="tips-box">
+                <h4>💡 Pro Tip:</h4>
+                <p>Try switching up the <strong>Art Style</strong> (like Anime or Pixel Art) or changing the <strong>Story Tone</strong> to humorous or dramatic to see how the AI reshapes the narrative!</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <p>ComicCraft Studio &bull; Netlify & Web Ready &bull; Powered by Gemini AI</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
